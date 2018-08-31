@@ -1,0 +1,14 @@
+version: "2"
+
+services:
+  docker-registry-listener:
+    image: thecampagnards/docker-registry-listener
+    build: .
+    environment:
+      - SLEEP_TIME=10
+    volumes:
+      - listener_data:/opt/docker-registry-listener/data
+      - ./template.json:/opt/docker-registry-listener/configuration.json
+
+volumes:
+  listener_data:

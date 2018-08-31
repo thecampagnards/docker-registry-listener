@@ -1,0 +1,10 @@
+[
+    {
+        "tagUrl": "https://registry.hub.docker.com/v1/repositories/sonarqube/tags",
+        "apiToCall": {
+            "url": "https://gitlab.com/api/v4/projects/2070/trigger/pipeline",
+            "requestType": "POST",
+            "curlOptions": "-k -F token= -F ref=master"
+        }
+    }
+]
