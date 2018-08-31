@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ ! -f configuration.json ]; then
     echo "No configuration file found"
@@ -8,29 +8,38 @@ fi
 while :; do
     for row in $(jq -r '.[] | @base64' configuration.json); do
 
-        url=$(echo "$row" | base64 -d | jq -r '.tagUrl')
-        encode=$(url-encode "$url")
+        row=$(echo "$row" | base64 -d)
+        url=$(echo "$row" | jq -r '.source.url')
+        options=$(echo "$row" | jq -r '.source.curlOptions')
+        if [ "$options" == "null" ]; then
+            options=""
+        fi
+        url_encode=$(url-encode "$url")
 
-        data=$(curl -L -s "$url")
+        # https://github.com/koalaman/shellcheck/wiki/SC2086#exceptions
+        # shellcheck disable=SC2086
+        data=$(curl -Ls $options "$url")
 
-        if [ "$data" != "$(cat data/"$encode".json)" ]; then
+        if [ "$data" != "$(cat "data/$url_encode")" ]; then
 
-            echo "Diff for $url"
+            echo "Differences found for $url"
 
-            url=$(echo "$row" | base64 -d | jq -r '.apiToCall.url')
-            options=$(echo "$row" | base64 -d | jq -r '.apiToCall.curlOptions')
-            request_type=$(echo "$row" | base64 -d | jq -r '.apiToCall.requestType')
+            url=$(echo "$row" | jq -r '.target.url')
+            options=$(echo "$row" | jq -r '.target.curlOptions')
+            if [ "$options" == "null" ]; then
+                options=""
+            fi
 
-            # https://github.com/koalaman/shellcheck/wiki/SC2086#exceptions
             # shellcheck disable=SC2086
-            curl -sL -X "$request_type" $options "$url"
-            if [ 0 -eq $? ]; then
-                echo "$data" > "data/$encode.json"
+            response=$(curl --write-out '%{http_code}' --output /dev/null -Ls $options "$url")
+            if [ "$response" -eq 200 ]; then
+                echo "$data" > "data/$url_encode"
+                echo "Succeed to call $url"
             else
                 echo "Fail to call $url"
             fi
         else
-            echo "No diff for $url"
+            echo "No differences found for $url"
         fi
     done
 
