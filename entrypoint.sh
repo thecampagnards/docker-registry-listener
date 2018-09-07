@@ -32,7 +32,7 @@ while :; do
 
             # shellcheck disable=SC2086
             response=$(curl --write-out '%{http_code}' --output /dev/null -Ls $options "$url")
-            if [ "$response" -eq 200 ]; then
+            if [ "$response" -ge 200 -a "$response" -lt 300 ]; then
                 echo "$data" > "data/$url_encode"
                 echo "Succeed to call $url"
             else
