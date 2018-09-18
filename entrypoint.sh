@@ -18,7 +18,7 @@ while :; do
 
         # https://github.com/koalaman/shellcheck/wiki/SC2086#exceptions
         # shellcheck disable=SC2086
-        data=$(curl -Ls $options "$url")
+        data=$(eval curl -Ls $options "$url")
 
         if [ "$data" != "$(cat "data/$url_encode")" ]; then
 
@@ -31,7 +31,7 @@ while :; do
             fi
 
             # shellcheck disable=SC2086
-            response=$(curl --write-out '%{http_code}' --output /dev/null -Ls $options "$url")
+            response=$(eval curl --write-out '%{http_code}' --output /dev/null -Ls $options "$url")
             if [ "$response" -ge 200 -a "$response" -lt 300 ]; then
                 echo "$data" > "data/$url_encode"
                 echo "Succeed to call $url"
